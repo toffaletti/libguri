@@ -4,14 +4,15 @@ find_program(RAGEL "ragel")
 
 function(ragel_gen in_rl)
     add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${in_rl}.c
-      COMMAND ${RAGEL} -o ${CMAKE_CURRENT_BINARY_DIR}/${in_rl}.c ${CMAKE_CURRENT_SOURCE_DIR}/${in_rl}.rl -I ${CMAKE_CURRENT_SOURCE_DIR} -G2
+      #COMMAND ${RAGEL} -o ${CMAKE_CURRENT_BINARY_DIR}/${in_rl}.c ${CMAKE_CURRENT_SOURCE_DIR}/${in_rl}.rl -I ${CMAKE_CURRENT_SOURCE_DIR} -G2
+      COMMAND ${RAGEL} -o ${CMAKE_CURRENT_BINARY_DIR}/${in_rl}.c ${CMAKE_CURRENT_SOURCE_DIR}/${in_rl}.rl -I ${CMAKE_CURRENT_SOURCE_DIR}
       DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${in_rl}.rl
       )
 endfunction(ragel_gen)
 
-#set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pthread -std=gnu99 -g3 -ggdb -Wall -Wextra -pedantic")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pthread -std=gnu99 -O3 -Wall -Wextra -pedantic")
-add_definitions(-DURI_USE_GLIB)
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pthread -std=gnu99 -g3 -ggdb -Wall -Wextra -pedantic")
+#set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pthread -std=gnu99 -O3 -Wall -Wextra -pedantic")
+add_definitions(-DURI_USE_GLIB -D_GNU_SOURCE)
 
 include_directories(/usr/include/glib-2.0/ /usr/lib/glib-2.0/include/)
 

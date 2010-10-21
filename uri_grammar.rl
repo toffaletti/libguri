@@ -1,6 +1,6 @@
 %%{
 # translated to ragel from ABNF:
-# http://tools.ietf.org/html/rfc3986#page-49
+# http://tools.ietf.org/html/rfc3986#appendix-A
   machine uri_grammar;
 
   pct_encoded = "%" xdigit xdigit;

@@ -17,6 +17,18 @@ static void test_uri_parse_long(void) {
   uri_free(&u);
 }
 
+static void test_uri_normalize(void) {
+  static const char uri1[] = "eXAMPLE://a/./b/../b/%63/%7bfoo%7d";
+
+  printf("\nuri: %s\n", uri1);
+
+  uri u;
+  uri_init(&u);
+  g_assert(uri_parse(&u, uri1, strlen(uri1), NULL));
+  uri_normalize(&u);
+  uri_free(&u);
+}
+
 static void test_uri_parse_many(void) {
   uri u;
 
@@ -77,5 +89,6 @@ int main(int argc, char *argv[]) {
   g_test_init(&argc, &argv, NULL);
   g_test_add_func("/uri_parse/many", test_uri_parse_many);
   g_test_add_func("/uri_parse/long", test_uri_parse_long);
+  g_test_add_func("/uri_parse/normalize", test_uri_normalize);
   return g_test_run();
 }
