@@ -205,7 +205,9 @@ static void normalize_pct_encoded(const char *buf) {
   assert (cs != normalize_pct_encoded_error);
 }
 
+
 static void remove_dot_segments(uri *u) {
+  if (u->path == 0) return;
   size_t plen = strlen(u->path);
   switch (plen) {
     case 0:
@@ -214,7 +216,7 @@ static void remove_dot_segments(uri *u) {
     case 1:
       return;
   }
-  size_t segs_size = (plen / 2) * sizeof(char *);
+  size_t segs_size = plen * sizeof(char *);
   unsigned int segm = 0;
   char *p = 0;
   if (segs_size) {
@@ -225,47 +227,53 @@ static void remove_dot_segments(uri *u) {
       if (*p == '/' && p != u->path) {
         /* ignore empty segment. for example: // */
         if (segb+1 != p) {
-          /* terminate the segment with null */
           *p = 0;
-          /* switch on length of segment */
-          switch (p-(segb+1)) {
-            case 1:
-              /* skip . path segments */
-              if (*(segb+1) == '.') goto next;
-              break;
-            case 2:
-              /* rewind for .. path segments */
-              if (*(segb+1) == '.' && *(segb+2) == '.') {
-                if (segm) segm--;
-                goto next;
-              }
-              break;
-          }
           /* put the pointer to the segment in segments array */
           segs[segm] = segb+1;
           segm++;
         }
-  next:
         /* move begin pointer forward. reset end pointer to 0 */
         segb = p;
       }
     }
     /* final segment */
     if (segb+1 < u->path + plen) {
-      segs[segm] = segb+1;
-      segm++;
+        segs[segm] = segb+1;
+        segm++;
+    } else if (segb+1 == u->path + plen) {
+        segs[segm] = segb;
+        segm++;
+    }
+
+
+    for (unsigned int segi = 0; segi < segm; segi++) {
+      if (g_strcmp0(".", segs[segi]) == 0) {
+        segs[segi] = 0;
+      } else if (g_strcmp0("..", segs[segi]) == 0) {
+        segs[segi] = 0;
+        unsigned int segx = segi;
+        while (segx >= 1 && segs[segx] == 0) {
+          segx--;
+        }
+        segs[segx] = 0;
+      }
     }
 
     /* reassemble path from segment pointers */
     p = u->path;
     for (unsigned int segi = 0; segi < segm; segi++) {
-      *p = '/'; p++;
       char *pn = segs[segi];
+      if (pn == 0) continue;
+      *p = '/'; p++;
+      if (*pn == '/') continue;
       while (*pn) {
         *p = *pn;
         p++;
         pn++;
       }
+    }
+    if (segm && segs[segm-1] == 0) {
+      *p = '/'; p++;
     }
     free(segs);
   }
@@ -318,6 +326,9 @@ char *uri_compose(uri *u) {
     }
   }
   if (u->path) {
+    if (!g_str_has_prefix(u->path, "/")) {
+      g_string_append(s, "/");
+    }
     g_string_append(s, u->path);
   }
   if (u->query) {
@@ -330,6 +341,33 @@ char *uri_compose(uri *u) {
   char *result = s->str;
   g_string_free(s, FALSE);
   return result;
+}
+
+static void merge_path(uri *base, uri *r, uri *t) {
+  if (g_strcmp0(base->path, "") == 0 ||
+    g_strcmp0(base->path, "/") == 0 ||
+    base->path == NULL)
+  {
+    GString *s = g_string_sized_new(strlen(r->path) + 2);
+    g_string_printf(s, "/%s", r->path);
+    uri_set_path(t, s->str, s->len);
+    g_string_free(s, TRUE);
+  } else if (r->path) {
+    size_t len = strlen(base->path);
+    /* NOTE: skip the last character because the path might end in /
+     * but we need to skip the entire last path *segment*
+     */
+    char *last_slash = &base->path[len - 1];
+    while (last_slash > base->path && *last_slash != '/') {
+      last_slash--;
+    }
+    GString *s = g_string_new_len(base->path, (last_slash - base->path)+1);
+    g_string_append(s, r->path);
+    uri_set_path(t, s->str, s->len);
+    g_string_free(s, TRUE);
+  } else if (base->path) {
+    uri_set_path(t, base->path, -1);
+  }
 }
 
 void uri_transform(uri *base, uri *r, uri *t) {
@@ -352,7 +390,7 @@ void uri_transform(uri *base, uri *r, uri *t) {
       remove_dot_segments(t);
       uri_set_query(t, r->query, -1);
     } else {
-      if (g_strcmp0(r->path, "") == 0) {
+      if (r->path == 0 || g_strcmp0(r->path, "") == 0) {
         uri_set_path(t, base->path, -1);
         if (r->query) {
           uri_set_query(t, r->query, -1);
@@ -360,12 +398,11 @@ void uri_transform(uri *base, uri *r, uri *t) {
           uri_set_query(t, base->query, -1);
         }
       } else {
-        if (g_str_has_prefix(r->path, "/")) {
+        if (r->path && g_str_has_prefix(r->path, "/")) {
           uri_set_path(t, r->path, -1);
           remove_dot_segments(t);
         } else {
-          /* TODO: merge */
-          uri_set_path(t, r->path, -1);
+          merge_path(base, r, t);
           remove_dot_segments(t);
         }
         uri_set_query(t, r->query, -1);

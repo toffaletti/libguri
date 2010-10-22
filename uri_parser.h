@@ -41,3 +41,4 @@ extern void uri_set_fragment(uri *u, const char *s, ssize_t l);
 
 extern void uri_normalize(uri *u);
 extern char *uri_compose(uri *u);
+extern void uri_transform(uri *base, uri *relative, uri *transformed);
