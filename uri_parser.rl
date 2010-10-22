@@ -206,7 +206,7 @@ static void normalize_pct_encoded(const char *buf) {
   assert (cs != normalize_pct_encoded_error);
 }
 
-static void normalize_path(uri *u) {
+static void remove_dot_segments(uri *u) {
   size_t plen = strlen(u->path);
   switch (plen) {
     case 0:
@@ -294,7 +294,7 @@ void uri_normalize(uri *u) {
   }
   normalize_pct_encoded(u->host);
   normalize_pct_encoded(u->path);
-  normalize_path(u);
+  remove_dot_segments(u);
 
   if (u->query) {
     normalize_pct_encoded(u->query);
@@ -307,16 +307,20 @@ void uri_normalize(uri *u) {
 char *uri_compose(uri *u) {
   GString *s = g_string_sized_new(1024);
   if (u->scheme) {
-    g_string_append_printf(s, "%s://", u->scheme);
+    g_string_append_printf(s, "%s:", u->scheme);
+  }
+  /* authority */
+  if (u->userinfo || u->host) {
+    g_string_append(s, "//");
   }
   if (u->userinfo) {
     g_string_append_printf(s, "%s@", u->userinfo);
   }
   if (u->host) {
     g_string_append(s, u->host);
-  }
-  if (u->port) {
-    g_string_append_printf(s, ":%u", u->port);
+    if (u->port) {
+      g_string_append_printf(s, ":%u", u->port);
+    }
   }
   if (u->path) {
     g_string_append(s, u->path);
@@ -331,5 +335,54 @@ char *uri_compose(uri *u) {
   char *result = s->str;
   g_string_free(s, FALSE);
   return result;
+}
+
+void uri_transform(uri *base, uri *r, uri *t) {
+  // TODO: make a setter api that checks for NULL and does the right thing
+  uri_clear(t);
+  if (r->scheme) {
+    t->scheme = g_string_chunk_insert(t->chunk, r->scheme);
+    t->userinfo = g_string_chunk_insert(t->chunk, r->userinfo);
+    t->host = g_string_chunk_insert(t->chunk, r->host);
+    t->port = r->port;
+    t->path = g_string_chunk_insert(t->chunk, r->path);
+    remove_dot_segments(t);
+    t->query = g_string_chunk_insert(t->chunk, r->query);
+  } else {
+    /* authority */
+    if (r->userinfo || r->host) {
+      t->userinfo = g_string_chunk_insert(t->chunk, r->userinfo);
+      t->host = g_string_chunk_insert(t->chunk, r->host);
+      t->port = r->port;
+      t->path = g_string_chunk_insert(t->chunk, r->path);
+      remove_dot_segments(t);
+      t->query = g_string_chunk_insert(t->chunk, r->query);
+    } else {
+      if (g_strcmp0(r->path, "") == 0) {
+        t->path = g_string_chunk_insert(t->chunk, base->path);
+        if (r->query) {
+          t->query = g_string_chunk_insert(t->chunk, r->query);
+        } else if (base->query) {
+          t->query = g_string_chunk_insert(t->chunk, base->query);
+        }
+      } else {
+        if (g_str_has_prefix(r->path, "/")) {
+          t->path = g_string_chunk_insert(t->chunk, r->path);
+          remove_dot_segments(t);
+        } else {
+          /* TODO: merge */
+          t->path = g_string_chunk_insert(t->chunk, r->path);
+          remove_dot_segments(t);
+        }
+        t->query = g_string_chunk_insert(t->chunk, r->query);
+      }
+      /* authority */
+      t->userinfo = g_string_chunk_insert(t->chunk, base->userinfo);
+      t->host = g_string_chunk_insert(t->chunk, base->host);
+      t->port = base->port;
+    }
+    t->scheme = g_string_chunk_insert(t->chunk, base->scheme);
+  }
+  t->fragment = g_string_chunk_insert(t->chunk, r->fragment);
 }
 

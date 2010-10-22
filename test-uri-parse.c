@@ -81,6 +81,19 @@ static void test_uri_normalize(void) {
   g_assert(uri_parse(&u, uri1, strlen(uri1), NULL));
   uri_normalize(&u);
   g_assert(g_strcmp0("/b/c/%7Bfoo%7D", u.path) == 0);
+  uri_clear(&u);
+
+  static const char uri2[] = "http://host/../";
+  g_assert(uri_parse(&u, uri2, strlen(uri2), NULL));
+  uri_normalize(&u);
+  g_assert(g_strcmp0(u.path, "/") == 0);
+  uri_clear(&u);
+
+  static const char uri3[] = "http://host/./";
+  g_assert(uri_parse(&u, uri3, strlen(uri3), NULL));
+  uri_normalize(&u);
+  g_assert(g_strcmp0("/", u.path) == 0);
+
   uri_free(&u);
 }
 
