@@ -2,10 +2,6 @@
 #include <stddef.h>
 
 /* TODO:
- * Component Recomposition
- * http://tools.ietf.org/html/rfc3986#section-5.3
- * Relative Resolution
- * http://tools.ietf.org/html/rfc3986#section-5.2
  * Normalization and Comparision
  * http://tools.ietf.org/html/rfc3986#section-6
  */
