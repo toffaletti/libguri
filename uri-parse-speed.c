@@ -11,8 +11,9 @@ int main(int argc, char *argv[]) {
   while ( (l = fgets(buf, sizeof(buf), stdin)) ) {
     int len = strlen(l);
     if (len > 0 && l[len-1] == '\n') { l[len-1] = 0; }
-    uri_parse(&u, buf, len-1, &error_at);
-    if (error_at) {
+    if (uri_parse(&u, buf, len-1, &error_at)) {
+      uri_normalize(&u);
+    } else if (error_at) {
       fprintf(stderr, "error for %s at %s\n", buf, error_at);
     }
     uri_clear(&u);

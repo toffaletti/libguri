@@ -32,3 +32,4 @@ extern void uri_clear(uri *u);
 extern void uri_free(uri *u);
 
 extern void uri_normalize(uri *u);
+extern char *uri_compose(uri *u);

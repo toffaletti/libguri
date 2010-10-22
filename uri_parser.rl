@@ -143,6 +143,7 @@ void uri_free(uri *u) {
 }
 
 %%{
+# simple machine to normalize percent encoding in uris
   machine normalize_pct_encoded;
 
   action pct_encoded {
@@ -173,9 +174,12 @@ void uri_free(uri *u) {
       || (c == 0x7E) /* tilde */
       )
     {
+      /* replace encoded value with character */
       *(d1-1) = c;
       memmove(d1, d2+1, pe-(d2+1));
+      /* adjust internal state to match the buffer after memmove */
       pe = pe-2;
+      /* add null terminator */
       *((char *)pe) = 0;
       fexec fpc-2;
     }
@@ -199,70 +203,98 @@ static void normalize_pct_encoded(const char *buf) {
 
   %% write exec;
 
-  if (cs == normalize_pct_encoded_error) {
-    printf("shit, error!\n");
+  assert (cs != normalize_pct_encoded_error);
+}
+
+static void normalize_path(uri *u) {
+  size_t plen = strlen(u->path);
+  switch (plen) {
+    case 0:
+#ifdef URI_USE_GLIB
+      u->path = g_string_chunk_insert(u->chunk, "/");
+#else
+      u->path = strdup("/");
+#endif
+      return;
+    case 1:
+      return;
   }
+  size_t segs_size = (plen / 2) * sizeof(char *);
+  unsigned int segm = 0;
+  char *p = 0;
+  if (segs_size) {
+    char **segs = malloc(segs_size);
+    char *segb = u->path;
+    /* split path on / into a list of segments */
+    for (p = u->path; *p != 0; p++) {
+      if (*p == '/' && p != u->path) {
+        /* ignore empty segment. for example: // */
+        if (segb+1 != p) {
+          /* terminate the segment with null */
+          *p = 0;
+          /* switch on length of segment */
+          switch (p-(segb+1)) {
+            case 1:
+              /* skip . path segments */
+              if (*(segb+1) == '.') goto next;
+              break;
+            case 2:
+              /* rewind for .. path segments */
+              if (*(segb+1) == '.' && *(segb+2) == '.') {
+                if (segm) segm--;
+                goto next;
+              }
+              break;
+          }
+          /* put the pointer to the segment in segments array */
+          segs[segm] = segb+1;
+          segm++;
+        }
+  next:
+        /* move begin pointer forward. reset end pointer to 0 */
+        segb = p;
+      }
+    }
+    /* final segment */
+    if (segb+1 < u->path + plen) {
+      segs[segm] = segb+1;
+      segm++;
+    }
+
+    /* reassemble path from segment pointers */
+    p = u->path;
+    for (unsigned int segi = 0; segi < segm; segi++) {
+      *p = '/'; p++;
+      char *pn = segs[segi];
+      while (*pn) {
+        *p = *pn;
+        p++;
+        pn++;
+      }
+    }
+    free(segs);
+  }
+
+  if (segm == 0) {
+    *p = '/'; p++;
+  }
+
+  *p = 0;
 }
 
 void uri_normalize(uri *u) {
-  char *p;
-  for (p = u->scheme; *p != 0; p++) {
+  for (char *p = u->scheme; *p != 0; p++) {
     *p = tolower(*p);
   }
   if (u->userinfo) {
     normalize_pct_encoded(u->userinfo);
   }
-  for (p = u->host; *p != 0; p++) {
+  for (char *p = u->host; *p != 0; p++) {
     *p = tolower(*p);
   }
   normalize_pct_encoded(u->host);
   normalize_pct_encoded(u->path);
-  printf("path: %s\n", u->path);
-  {
-    GQueue *q = g_queue_new();
-    char *segb = 0;
-    char *sege = 0;
-    for (p = u->path; *p != 0; p++) {
-      if (*p == '/') {
-        if (segb == 0) {
-          segb = p;
-        } else if (sege == 0) {
-          sege = p;
-          /* do stuff */
-          g_queue_push_tail(q, strndupa(segb+1, sege-segb-1));
-          printf("seg: %s\n", strndupa(segb+1, sege-segb-1));
-          segb = sege;
-          sege = 0;
-        }
-      }
-    }
-    if (segb && sege == 0) {
-      printf("seg: %s\n", segb+1);
-      g_queue_push_tail(q, strndupa(segb+1, sege-segb-1));
-    }
-    GList *cur = q->head;
-    while (cur) {
-      GList *next = g_list_next(cur);
-      GList *prev = g_list_previous(cur);
-      printf("cur: %s\n", (char *)cur->data);
-      if (g_strcmp0(cur->data, ".") == 0) {
-        g_queue_delete_link(q, cur);
-      } else if (g_strcmp0(cur->data, "..") == 0) {
-        g_queue_delete_link(q, prev);
-        g_queue_delete_link(q, cur);
-      }
-      cur = next;
-    }
-
-    printf("final:\n");
-    cur = q->head;
-    while (cur) {
-      printf("cur: %s\n", (char *)cur->data);
-      cur = g_list_next(cur);
-    }
-
-    g_queue_free(q);
-  }
+  normalize_path(u);
 
   if (u->query) {
     normalize_pct_encoded(u->query);
@@ -270,5 +302,34 @@ void uri_normalize(uri *u) {
   if (u->fragment) {
     normalize_pct_encoded(u->fragment);
   }
+}
+
+char *uri_compose(uri *u) {
+  GString *s = g_string_sized_new(1024);
+  if (u->scheme) {
+    g_string_append_printf(s, "%s://", u->scheme);
+  }
+  if (u->userinfo) {
+    g_string_append_printf(s, "%s@", u->userinfo);
+  }
+  if (u->host) {
+    g_string_append(s, u->host);
+  }
+  if (u->port) {
+    g_string_append_printf(s, ":%u", u->port);
+  }
+  if (u->path) {
+    g_string_append(s, u->path);
+  }
+  if (u->query) {
+    g_string_append(s, u->query);
+  }
+  if (u->fragment) {
+    g_string_append(s, u->fragment);
+  }
+
+  char *result = s->str;
+  g_string_free(s, FALSE);
+  return result;
 }
 

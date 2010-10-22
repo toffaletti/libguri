@@ -1,5 +1,6 @@
 #include "uri_parser.h"
 #include <assert.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -17,15 +18,69 @@ static void test_uri_parse_long(void) {
   uri_free(&u);
 }
 
-static void test_uri_normalize(void) {
-  static const char uri1[] = "eXAMPLE://a/./b/../b/%63/%7bfoo%7d";
-
-  printf("\nuri: %s\n", uri1);
+static void test_uri_compose(void) {
+  static const char uri1[] = "eXAMPLE://ExAmPlE.CoM/foo/../boo/%25hi%0b/.t%65st/./this?query=string#frag";
 
   uri u;
   uri_init(&u);
   g_assert(uri_parse(&u, uri1, strlen(uri1), NULL));
   uri_normalize(&u);
+  char *s = uri_compose(&u);
+  g_assert(g_strcmp0("example://example.com/boo/%25hi%0B/.test/this?query=string#frag", s) == 0);
+  free(s);
+  uri_free(&u);
+}
+
+static void test_uri_normalize_host(void) {
+  static const char uri1[] = "eXAMPLE://ExAmPlE.CoM/";
+
+  uri u;
+  uri_init(&u);
+  g_assert(uri_parse(&u, uri1, strlen(uri1), NULL));
+  uri_normalize(&u);
+  g_assert(g_strcmp0("example.com", u.host) == 0);
+
+  uri_free(&u);
+}
+
+static void test_uri_normalize_one_slash(void) {
+  static const char uri1[] = "eXAMPLE://a";
+  static const char uri2[] = "eXAMPLE://a/";
+
+  uri u;
+  uri_init(&u);
+  g_assert(uri_parse(&u, uri1, strlen(uri1), NULL));
+  uri_normalize(&u);
+  g_assert(g_strcmp0("/", u.path) == 0);
+
+  uri_clear(&u);
+
+  g_assert(uri_parse(&u, uri2, strlen(uri2), NULL));
+  uri_normalize(&u);
+  g_assert(g_strcmp0("/", u.path) == 0);
+
+  uri_free(&u);
+}
+
+static void test_uri_normalize_all_slashes(void) {
+  static const char uri1[] = "eXAMPLE://a//////";
+
+  uri u;
+  uri_init(&u);
+  g_assert(uri_parse(&u, uri1, strlen(uri1), NULL));
+  uri_normalize(&u);
+  g_assert(g_strcmp0("/", u.path) == 0);
+  uri_free(&u);
+}
+
+static void test_uri_normalize(void) {
+  static const char uri1[] = "eXAMPLE://a/./b/../b/%63/%7bfoo%7d";
+
+  uri u;
+  uri_init(&u);
+  g_assert(uri_parse(&u, uri1, strlen(uri1), NULL));
+  uri_normalize(&u);
+  g_assert(g_strcmp0("/b/c/%7Bfoo%7D", u.path) == 0);
   uri_free(&u);
 }
 
@@ -90,5 +145,9 @@ int main(int argc, char *argv[]) {
   g_test_add_func("/uri_parse/many", test_uri_parse_many);
   g_test_add_func("/uri_parse/long", test_uri_parse_long);
   g_test_add_func("/uri_parse/normalize", test_uri_normalize);
+  g_test_add_func("/uri_parse/normalize/all_slashes", test_uri_normalize_all_slashes);
+  g_test_add_func("/uri_parse/normalize/one_slash", test_uri_normalize_one_slash);
+  g_test_add_func("/uri_parse/normalize/host", test_uri_normalize_host);
+  g_test_add_func("/uri_parse/compose", test_uri_compose);
   return g_test_run();
 }
