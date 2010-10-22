@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include <stddef.h>
 
 /* TODO:
@@ -30,6 +31,13 @@ extern void uri_init(uri *u);
 extern int uri_parse(uri *u, const char *buf, size_t len, const char **error_at);
 extern void uri_clear(uri *u);
 extern void uri_free(uri *u);
+
+extern void uri_set_scheme(uri *u, const char *s, ssize_t l);
+extern void uri_set_userinfo(uri *u, const char *s, ssize_t l);
+extern void uri_set_host(uri *u, const char *s, ssize_t l);
+extern void uri_set_path(uri *u, const char *s, ssize_t l);
+extern void uri_set_query(uri *u, const char *s, ssize_t l);
+extern void uri_set_fragment(uri *u, const char *s, ssize_t l);
 
 extern void uri_normalize(uri *u);
 extern char *uri_compose(uri *u);

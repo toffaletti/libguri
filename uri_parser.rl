@@ -6,6 +6,30 @@
 
 #include <stdio.h>
 
+#ifdef URI_USE_GLIB
+#define URI_DEFINE_SETTER(field) \
+  void uri_set_##field(uri *u, const char *s, ssize_t l) { \
+    if (s == 0) { u->field = 0; return; } \
+    if (l == -1) { l = strlen(s); } \
+    u->field = g_string_chunk_insert_len(u->chunk, s, l); \
+  }
+#else
+#define URI_DEFINE_SETTER(field) \
+  void uri_set_##field(uri *u, const char *s, ssize_t l) { \
+    if (u->field) { free(u->field); }
+    if (s == 0) { u->field = 0; return; } \
+    if (l == -1) { l = strlen(s); } \
+    u->field = strndup(s, l); \
+  }
+#endif
+
+URI_DEFINE_SETTER(scheme)
+URI_DEFINE_SETTER(userinfo)
+URI_DEFINE_SETTER(host)
+URI_DEFINE_SETTER(path)
+URI_DEFINE_SETTER(query)
+URI_DEFINE_SETTER(fragment)
+
 %%{
   machine uri_parser;
 
@@ -14,32 +38,19 @@
   }
 
   action scheme {
-#ifdef URI_USE_GLIB
-    u->scheme = g_string_chunk_insert_len(u->chunk, mark, fpc-mark);
-#else
-    u->scheme = strndup(mark, fpc-mark);
-#endif
+    uri_set_scheme(u, mark, fpc-mark);
   }
 
   action userinfo {
-#ifdef URI_USE_GLIB
-    u->userinfo = g_string_chunk_insert_len(u->chunk, mark, fpc-mark);
-#else
-    u->userinfo = strndup(mark, fpc-mark);
-#endif
+    uri_set_userinfo(u, mark, fpc-mark);
   }
 
   action host {
-#ifdef URI_USE_GLIB
-    u->host = g_string_chunk_insert_len(u->chunk, mark, fpc-mark);
-#else
     /* host may be called multiple times because
      * the parser isn't able to figure out the difference
      * between the userinfo and host until after the @ is encountered
      */
-    if (u->host) { free(u->host); }
-    u->host = strndup(mark, fpc-mark);
-#endif
+    uri_set_host(u, mark, fpc-mark);
   }
 
   action port {
@@ -47,27 +58,15 @@
   }
 
   action path {
-#ifdef URI_USE_GLIB
-    u->path = g_string_chunk_insert_len(u->chunk, mark, fpc-mark);
-#else
-    u->path = strndup(mark, fpc-mark);
-#endif
+    uri_set_path(u, mark, fpc-mark);
   }
 
   action query {
-#ifdef URI_USE_GLIB
-    u->query = g_string_chunk_insert_len(u->chunk, mark, fpc-mark);
-#else
-    u->query = strndup(mark, fpc-mark);
-#endif
+    uri_set_query(u, mark, fpc-mark);
   }
 
   action fragment {
-#ifdef URI_USE_GLIB
-    u->fragment = g_string_chunk_insert_len(u->chunk, mark, fpc-mark);
-#else
-    u->fragment = strndup(mark, fpc-mark);
-#endif
+    uri_set_fragment(u, mark, fpc-mark);
   }
 
   include uri_grammar "uri_grammar.rl";
@@ -210,11 +209,7 @@ static void remove_dot_segments(uri *u) {
   size_t plen = strlen(u->path);
   switch (plen) {
     case 0:
-#ifdef URI_USE_GLIB
-      u->path = g_string_chunk_insert(u->chunk, "/");
-#else
-      u->path = strdup("/");
-#endif
+      uri_set_path(u, "/", 1);
       return;
     case 1:
       return;
@@ -338,51 +333,50 @@ char *uri_compose(uri *u) {
 }
 
 void uri_transform(uri *base, uri *r, uri *t) {
-  // TODO: make a setter api that checks for NULL and does the right thing
   uri_clear(t);
   if (r->scheme) {
-    t->scheme = g_string_chunk_insert(t->chunk, r->scheme);
-    t->userinfo = g_string_chunk_insert(t->chunk, r->userinfo);
-    t->host = g_string_chunk_insert(t->chunk, r->host);
+    uri_set_scheme(t, r->scheme, -1);
+    uri_set_userinfo(t, r->userinfo, -1);
+    uri_set_host(t, r->host, -1);
     t->port = r->port;
-    t->path = g_string_chunk_insert(t->chunk, r->path);
+    uri_set_path(t, r->path, -1);
     remove_dot_segments(t);
-    t->query = g_string_chunk_insert(t->chunk, r->query);
+    uri_set_query(t, r->query, -1);
   } else {
     /* authority */
     if (r->userinfo || r->host) {
-      t->userinfo = g_string_chunk_insert(t->chunk, r->userinfo);
-      t->host = g_string_chunk_insert(t->chunk, r->host);
+      uri_set_userinfo(t, r->userinfo, -1);
+      uri_set_host(t, r->host, -1);
       t->port = r->port;
-      t->path = g_string_chunk_insert(t->chunk, r->path);
+      uri_set_path(t, r->path, -1);
       remove_dot_segments(t);
-      t->query = g_string_chunk_insert(t->chunk, r->query);
+      uri_set_query(t, r->query, -1);
     } else {
       if (g_strcmp0(r->path, "") == 0) {
-        t->path = g_string_chunk_insert(t->chunk, base->path);
+        uri_set_path(t, base->path, -1);
         if (r->query) {
-          t->query = g_string_chunk_insert(t->chunk, r->query);
+          uri_set_query(t, r->query, -1);
         } else if (base->query) {
-          t->query = g_string_chunk_insert(t->chunk, base->query);
+          uri_set_query(t, base->query, -1);
         }
       } else {
         if (g_str_has_prefix(r->path, "/")) {
-          t->path = g_string_chunk_insert(t->chunk, r->path);
+          uri_set_path(t, r->path, -1);
           remove_dot_segments(t);
         } else {
           /* TODO: merge */
-          t->path = g_string_chunk_insert(t->chunk, r->path);
+          uri_set_path(t, r->path, -1);
           remove_dot_segments(t);
         }
-        t->query = g_string_chunk_insert(t->chunk, r->query);
+        uri_set_query(t, r->query, -1);
       }
       /* authority */
-      t->userinfo = g_string_chunk_insert(t->chunk, base->userinfo);
-      t->host = g_string_chunk_insert(t->chunk, base->host);
+      uri_set_userinfo(t, base->userinfo, -1);
+      uri_set_host(t, base->host, -1);
       t->port = base->port;
     }
-    t->scheme = g_string_chunk_insert(t->chunk, base->scheme);
+    uri_set_scheme(t, base->scheme, -1);
   }
-  t->fragment = g_string_chunk_insert(t->chunk, r->fragment);
+  uri_set_fragment(t, r->fragment, -1);
 }
 
