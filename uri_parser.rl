@@ -347,11 +347,11 @@ static char *_uri_compose(uri *u, int path_only) {
 
 
 char *uri_compose(uri *u) {
-    return _uri_compose(u, 1);
+    return _uri_compose(u, 0);
 }
 
 char *uri_compose_partial(uri *u) {
-    return _uri_compose(u, 0);
+    return _uri_compose(u, 1);
 }
 
 static void merge_path(uri *base, uri *r, uri *t) {
