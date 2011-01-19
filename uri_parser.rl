@@ -307,22 +307,24 @@ void uri_normalize(uri *u) {
   }
 }
 
-char *uri_compose(uri *u) {
+static char *_uri_compose(uri *u, int path_only) {
   GString *s = g_string_sized_new(1024);
-  if (u->scheme) {
-    g_string_append_printf(s, "%s:", u->scheme);
-  }
-  /* authority */
-  if (u->userinfo || u->host) {
-    g_string_append(s, "//");
-  }
-  if (u->userinfo) {
-    g_string_append_printf(s, "%s@", u->userinfo);
-  }
-  if (u->host) {
-    g_string_append(s, u->host);
-    if (u->port) {
-      g_string_append_printf(s, ":%u", u->port);
+  if (!path_only) {
+    if (u->scheme) {
+      g_string_append_printf(s, "%s:", u->scheme);
+    }
+    /* authority */
+    if (u->userinfo || u->host) {
+      g_string_append(s, "//");
+    }
+    if (u->userinfo) {
+      g_string_append_printf(s, "%s@", u->userinfo);
+    }
+    if (u->host) {
+      g_string_append(s, u->host);
+      if (u->port) {
+        g_string_append_printf(s, ":%u", u->port);
+      }
     }
   }
   if (u->path) {
@@ -341,6 +343,15 @@ char *uri_compose(uri *u) {
   char *result = s->str;
   g_string_free(s, FALSE);
   return result;
+}
+
+
+char *uri_compose(uri *u) {
+    return _uri_compose(u, 1);
+}
+
+char *uri_compose_partial(uri *u) {
+    return _uri_compose(u, 0);
 }
 
 static void merge_path(uri *base, uri *r, uri *t) {
