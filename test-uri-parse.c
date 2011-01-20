@@ -18,6 +18,28 @@ static void test_uri_parse_long(void) {
   uri_free(&u);
 }
 
+static void test_uri_parse_brackets(void) {
+  static const char uri1[] = "http://ad.doubleclick.net/adi/N5371.Google/B4882217.2;sz=160x600;pc=[TPAS_ID];click=http://googleads.g.doubleclick.net/aclk?sa=l&ai=Bepsf-z83TfuWJIKUjQS46ejyAeqc0t8B2uvnkxeiro6LRdC9wQEQARgBIPjy_wE4AFC0-b7IAmDJ9viGyKOgGaABnoHS5QOyAQ53d3cub3NuZXdzLmNvbboBCjE2MHg2MDBfYXPIAQnaAS9odHRwOi8vd3d3Lm9zbmV3cy5jb20vdXNlci9qYWNrZWVibGV1L2NvbW1lbnRzL7gCGMgCosXLE6gDAegDrwLoA5EG6APgBfUDAgAARPUDIAAAAA&num=1&sig=AGiWqty7uE4ibhWIPcOiZlX0__AQkpGEWA&client=ca-pub-6467510223857492&adurl=;ord=410711259?";
+  const gchar *error_at = NULL;
+  uri u;
+  uri_init(&u);
+  int st = uri_parse(&u, uri1, strlen(uri1), &error_at);
+  if (error_at) g_test_message("uri_parse failed at -> %s", error_at);
+  uri_free(&u);
+  g_assert(st);
+}
+
+static void test_uri_parse_pipe(void) {
+  static const char uri1[] = "http://ads.pointroll.com/PortalServe/?pid=1048344U85520100615200820&flash=10&time=3|18:36|-8&redir=$CTURL$&r=0.8149350655730814";
+  const gchar *error_at = NULL;
+  uri u;
+  uri_init(&u);
+  int st = uri_parse(&u, uri1, strlen(uri1), &error_at);
+  if (error_at) g_test_message("uri_parse failed at -> %s", error_at);
+  uri_free(&u);
+  g_assert(st);
+}
+
 static void test_uri_transform(void) {
   /* examples from http://tools.ietf.org/html/rfc3986#section-5.4.1 */
   static const char base_uri[] = "http://a/b/c/d;p?q";
@@ -464,6 +486,8 @@ int main(int argc, char *argv[]) {
   g_test_init(&argc, &argv, NULL);
   g_test_add_func("/uri_parse/many", test_uri_parse_many);
   g_test_add_func("/uri_parse/long", test_uri_parse_long);
+  g_test_add_func("/uri_parse/brackets", test_uri_parse_brackets);
+  g_test_add_func("/uri_parse/pipe", test_uri_parse_pipe);
   g_test_add_func("/uri_parse/normalize", test_uri_normalize);
   g_test_add_func("/uri_parse/normalize/all_slashes", test_uri_normalize_all_slashes);
   g_test_add_func("/uri_parse/normalize/one_slash", test_uri_normalize_one_slash);
