@@ -120,7 +120,7 @@ int uri_parse(uri *u, const char *buf, size_t len, const char **error_at) {
 
 void uri_clear(uri *u) {
 #ifdef URI_USE_GLIB
-  g_string_chunk_clear(u->chunk);
+  if (u->chunk) g_string_chunk_clear(u->chunk);
 #else
   uri_free(u);
 #endif
@@ -129,7 +129,7 @@ void uri_clear(uri *u) {
 
 void uri_free(uri *u) {
 #ifdef URI_USE_GLIB
-  g_string_chunk_free(u->chunk);
+  if (u->chunk) g_string_chunk_free(u->chunk);
 #else
   if (u->scheme) free(u->scheme);
   if (u->userinfo) free(u->userinfo);
