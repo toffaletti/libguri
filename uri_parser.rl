@@ -145,6 +145,19 @@ void uri_free(uri *u) {
 # simple machine to normalize percent encoding in uris
   machine normalize_pct_encoded;
 
+  action pct_unicode_encoded {
+    char *d1 = (char *)(fpc-3);
+    char *d2 = (char *)(fpc-2);
+    char *d3 = (char *)(fpc-1);
+    char *d4 = (char *)fpc;
+
+    /* convert hex digits to upper case */
+    *d1 = toupper(*d1);
+    *d2 = toupper(*d2);
+    *d3 = toupper(*d3);
+    *d4 = toupper(*d4);
+  }
+
   action pct_encoded {
     char *d1 = (char *)(fpc-1);
     char *d2 = (char *)fpc;
@@ -184,9 +197,11 @@ void uri_free(uri *u) {
     }
   }
 
+  pct_noencode = ("%" ^xdigit?);
+  pct_unicode_encoded = ("%u" xdigit xdigit xdigit xdigit) @pct_unicode_encoded;
   pct_encoded = ("%" xdigit xdigit) @pct_encoded;
 
-  main := (^"%"+ | pct_encoded)*;
+  main := (^"%"+ | pct_unicode_encoded | pct_noencode | pct_encoded)*;
 }%%
 
 %% write data;

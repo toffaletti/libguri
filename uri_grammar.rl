@@ -3,7 +3,8 @@
 # http://tools.ietf.org/html/rfc3986#appendix-A
   machine uri_grammar;
 
-  pct_encoded = "%" xdigit xdigit;
+# adding broken edge cases. see "escape" grammar in http11_parser_common.rl
+  pct_encoded = "%%" | ("%" xdigit xdigit?) | ("%u" xdigit xdigit xdigit xdigit);
   unreserved = alnum | "-" | "." | "_" | "~";
   sub_delims = "!" | "$" | "&" | "'" | "(" | ")"
                    | "*" | "+" | "," | ";" | "=";

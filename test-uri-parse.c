@@ -40,6 +40,42 @@ static void test_uri_parse_pipe(void) {
   g_assert(st);
 }
 
+static void test_uri_parse_unicode_escape(void) {
+  static const char uri1[] = "http://b.scorecardresearch.com/b?C1=8&C2=6035047&C3=463.9924&C4=ad21868c&C5=173229&C6=16jfaue1ukmeoq&C7=http%3A//remotecontrol.mtv.com/2011/01/20/sammi-sweetheart-giancoloa-terrell-owens-hair/&C8=Hot%20Shots%3A%20Sammi%20%u2018Sweetheart%u2019%20Lets%20Terrell%20Owens%20Play%20With%20Her%20Hair%20%BB%20MTV%20Remote%20Control%20Blog&C9=&C10=1680x1050&rn=58013009";
+  const gchar *error_at = NULL;
+  uri u;
+  uri_init(&u);
+  int st = uri_parse(&u, uri1, strlen(uri1), &error_at);
+  if (error_at) g_test_message("uri_parse failed at -> %s", error_at);
+  uri_normalize(&u);
+  uri_free(&u);
+  g_assert(st);
+}
+
+static void test_uri_parse_double_percent(void) {
+  static const char uri1[] = "http://bh.contextweb.com/bh/getuid?url=http://image2.pubmatic.com/AdServer/Pug?vcode=bz0yJnR5cGU9MSZqcz0xJmNvZGU9ODI1JnRsPTQzMjAw&piggybackCookie=%%CWGUID%%,User_tokens:%%USER_TOKENS%%";
+  const gchar *error_at = NULL;
+  uri u;
+  uri_init(&u);
+  int st = uri_parse(&u, uri1, strlen(uri1), &error_at);
+  if (error_at) g_test_message("uri_parse failed at -> %s", error_at);
+  uri_normalize(&u);
+  uri_free(&u);
+  g_assert(st);
+}
+
+static void test_uri_parse_badencode(void) {
+  static const char uri1[] = "http://b.scorecardresearch.com/b?c1=2&c2=6035223&rn=1404429288&c7=http%3A%2F%2Fdetnews.com%2Farticle%2F20110121%2FMETRO01%2F101210376%2FDetroit-women-get-no-help-in-arrest-of-alleged-car-thief&c8=Detroit%20women%20get%20no%20help%20in%20arrest%20of%20alleged%2&cv=2.2&cs=js";
+  const gchar *error_at = NULL;
+  uri u;
+  uri_init(&u);
+  int st = uri_parse(&u, uri1, strlen(uri1), &error_at);
+  if (error_at) g_test_message("uri_parse failed at -> %s", error_at);
+  uri_normalize(&u);
+  uri_free(&u);
+  g_assert(st);
+}
+
 static void test_uri_transform(void) {
   /* examples from http://tools.ietf.org/html/rfc3986#section-5.4.1 */
   static const char base_uri[] = "http://a/b/c/d;p?q";
@@ -488,6 +524,9 @@ int main(int argc, char *argv[]) {
   g_test_add_func("/uri_parse/long", test_uri_parse_long);
   g_test_add_func("/uri_parse/brackets", test_uri_parse_brackets);
   g_test_add_func("/uri_parse/pipe", test_uri_parse_pipe);
+  g_test_add_func("/uri_parse/unicode_escape", test_uri_parse_unicode_escape);
+  g_test_add_func("/uri_parse/double_percent", test_uri_parse_double_percent);
+  g_test_add_func("/uri_parse/badencode", test_uri_parse_badencode);
   g_test_add_func("/uri_parse/normalize", test_uri_normalize);
   g_test_add_func("/uri_parse/normalize/all_slashes", test_uri_normalize_all_slashes);
   g_test_add_func("/uri_parse/normalize/one_slash", test_uri_normalize_one_slash);
