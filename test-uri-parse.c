@@ -373,7 +373,7 @@ static void test_uri_transform(void) {
   uri_set_path(&r, "g;x=1/../y", -1);
   uri_transform(&b, &r, &t);
   s = uri_compose(&t);
-  g_assert_cmpstr("http://a/b/c/y", ===, s);
+  g_assert_cmpstr("http://a/b/c/y", ==, s);
   free(s);
   uri_clear(&r);
   uri_clear(&t);
