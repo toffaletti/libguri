@@ -93,7 +93,7 @@ static void test_uri_transform(void) {
   uri_set_path(&r, "g", -1);
   uri_transform(&b, &r, &t);
   s = uri_compose(&t);
-  g_assert(g_strcmp0("http://a/b/c/g", s) == 0);
+  g_assert_cmpstr("http://a/b/c/g", ==, s);
   free(s);
   uri_clear(&r);
   uri_clear(&t);
@@ -101,7 +101,7 @@ static void test_uri_transform(void) {
   uri_set_path(&r, "./g", -1);
   uri_transform(&b, &r, &t);
   s = uri_compose(&t);
-  g_assert(g_strcmp0("http://a/b/c/g", s) == 0);
+  g_assert_cmpstr("http://a/b/c/g", ==, s);
   free(s);
   uri_clear(&r);
   uri_clear(&t);
@@ -109,7 +109,7 @@ static void test_uri_transform(void) {
   uri_set_path(&r, "g/", -1);
   uri_transform(&b, &r, &t);
   s = uri_compose(&t);
-  g_assert(g_strcmp0("http://a/b/c/g/", s) == 0);
+  g_assert_cmpstr("http://a/b/c/g/", ==, s);
   free(s);
   uri_clear(&r);
   uri_clear(&t);
@@ -117,7 +117,7 @@ static void test_uri_transform(void) {
   uri_set_path(&r, "/g", -1);
   uri_transform(&b, &r, &t);
   s = uri_compose(&t);
-  g_assert(g_strcmp0("http://a/g", s) == 0);
+  g_assert_cmpstr("http://a/g", ==, s);
   free(s);
   uri_clear(&r);
   uri_clear(&t);
@@ -125,7 +125,7 @@ static void test_uri_transform(void) {
   uri_set_host(&r, "g", -1);
   uri_transform(&b, &r, &t);
   s = uri_compose(&t);
-  g_assert(g_strcmp0("http://g", s) == 0);
+  g_assert_cmpstr("http://g", ==, s);
   free(s);
   uri_clear(&r);
   uri_clear(&t);
@@ -133,7 +133,7 @@ static void test_uri_transform(void) {
   uri_set_query(&r, "?y", -1);
   uri_transform(&b, &r, &t);
   s = uri_compose(&t);
-  g_assert(g_strcmp0("http://a/b/c/d;p?y", s) == 0);
+  g_assert_cmpstr("http://a/b/c/d;p?y", ==, s);
   free(s);
   uri_clear(&r);
   uri_clear(&t);
@@ -142,7 +142,7 @@ static void test_uri_transform(void) {
   uri_set_query(&r, "?y", -1);
   uri_transform(&b, &r, &t);
   s = uri_compose(&t);
-  g_assert(g_strcmp0("http://a/b/c/g?y", s) == 0);
+  g_assert_cmpstr("http://a/b/c/g?y", ==, s);
   free(s);
   uri_clear(&r);
   uri_clear(&t);
@@ -150,7 +150,7 @@ static void test_uri_transform(void) {
   uri_set_fragment(&r, "#s", -1);
   uri_transform(&b, &r, &t);
   s = uri_compose(&t);
-  g_assert(g_strcmp0("http://a/b/c/d;p?q#s", s) == 0);
+  g_assert_cmpstr("http://a/b/c/d;p?q#s", ==, s);
   free(s);
   uri_clear(&r);
   uri_clear(&t);
@@ -159,7 +159,7 @@ static void test_uri_transform(void) {
   uri_set_fragment(&r, "#s", -1);
   uri_transform(&b, &r, &t);
   s = uri_compose(&t);
-  g_assert(g_strcmp0("http://a/b/c/g#s", s) == 0);
+  g_assert_cmpstr("http://a/b/c/g#s", ==, s);
   free(s);
   uri_clear(&r);
   uri_clear(&t);
@@ -169,7 +169,7 @@ static void test_uri_transform(void) {
   uri_set_fragment(&r, "#s", -1);
   uri_transform(&b, &r, &t);
   s = uri_compose(&t);
-  g_assert(g_strcmp0("http://a/b/c/g?y#s", s) == 0);
+  g_assert_cmpstr("http://a/b/c/g?y#s", ==, s);
   free(s);
   uri_clear(&r);
   uri_clear(&t);
@@ -177,7 +177,7 @@ static void test_uri_transform(void) {
   uri_set_path(&r, ";x", -1);
   uri_transform(&b, &r, &t);
   s = uri_compose(&t);
-  g_assert(g_strcmp0("http://a/b/c/;x", s) == 0);
+  g_assert_cmpstr("http://a/b/c/;x", ==, s);
   free(s);
   uri_clear(&r);
   uri_clear(&t);
@@ -185,7 +185,7 @@ static void test_uri_transform(void) {
   uri_set_path(&r, "g;x", -1);
   uri_transform(&b, &r, &t);
   s = uri_compose(&t);
-  g_assert(g_strcmp0("http://a/b/c/g;x", s) == 0);
+  g_assert_cmpstr("http://a/b/c/g;x", ==, s);
   free(s);
   uri_clear(&r);
   uri_clear(&t);
@@ -195,7 +195,7 @@ static void test_uri_transform(void) {
   uri_set_fragment(&r, "#s", -1);
   uri_transform(&b, &r, &t);
   s = uri_compose(&t);
-  g_assert(g_strcmp0("http://a/b/c/g;x?y#s", s) == 0);
+  g_assert_cmpstr("http://a/b/c/g;x?y#s", ==, s);
   free(s);
   uri_clear(&r);
   uri_clear(&t);
@@ -203,7 +203,7 @@ static void test_uri_transform(void) {
   uri_set_path(&r, "", -1);
   uri_transform(&b, &r, &t);
   s = uri_compose(&t);
-  g_assert(g_strcmp0("http://a/b/c/d;p?q", s) == 0);
+  g_assert_cmpstr("http://a/b/c/d;p?q", ==, s);
   free(s);
   uri_clear(&r);
   uri_clear(&t);
@@ -211,7 +211,7 @@ static void test_uri_transform(void) {
   uri_set_path(&r, ".", -1);
   uri_transform(&b, &r, &t);
   s = uri_compose(&t);
-  g_assert(g_strcmp0("http://a/b/c/", s) == 0);
+  g_assert_cmpstr("http://a/b/c/", ==, s);
   free(s);
   uri_clear(&r);
   uri_clear(&t);
@@ -219,7 +219,7 @@ static void test_uri_transform(void) {
   uri_set_path(&r, "./", -1);
   uri_transform(&b, &r, &t);
   s = uri_compose(&t);
-  g_assert(g_strcmp0("http://a/b/c/", s) == 0);
+  g_assert_cmpstr("http://a/b/c/", ==, s);
   free(s);
   uri_clear(&r);
   uri_clear(&t);
@@ -227,7 +227,7 @@ static void test_uri_transform(void) {
   uri_set_path(&r, "..", -1);
   uri_transform(&b, &r, &t);
   s = uri_compose(&t);
-  g_assert(g_strcmp0("http://a/b/", s) == 0);
+  g_assert_cmpstr("http://a/b/", ==, s);
   free(s);
   uri_clear(&r);
   uri_clear(&t);
@@ -235,7 +235,7 @@ static void test_uri_transform(void) {
   uri_set_path(&r, "../g", -1);
   uri_transform(&b, &r, &t);
   s = uri_compose(&t);
-  g_assert(g_strcmp0("http://a/b/g", s) == 0);
+  g_assert_cmpstr("http://a/b/g", ==, s);
   free(s);
   uri_clear(&r);
   uri_clear(&t);
@@ -243,7 +243,7 @@ static void test_uri_transform(void) {
   uri_set_path(&r, "../..", -1);
   uri_transform(&b, &r, &t);
   s = uri_compose(&t);
-  g_assert(g_strcmp0("http://a/", s) == 0);
+  g_assert_cmpstr("http://a/", ==, s);
   free(s);
   uri_clear(&r);
   uri_clear(&t);
@@ -251,7 +251,7 @@ static void test_uri_transform(void) {
   uri_set_path(&r, "../../", -1);
   uri_transform(&b, &r, &t);
   s = uri_compose(&t);
-  g_assert(g_strcmp0("http://a/", s) == 0);
+  g_assert_cmpstr("http://a/", ==, s);
   free(s);
   uri_clear(&r);
   uri_clear(&t);
@@ -259,7 +259,7 @@ static void test_uri_transform(void) {
   uri_set_path(&r, "../../g", -1);
   uri_transform(&b, &r, &t);
   s = uri_compose(&t);
-  g_assert(g_strcmp0("http://a/g", s) == 0);
+  g_assert_cmpstr("http://a/g", ==, s);
   free(s);
   uri_clear(&r);
   uri_clear(&t);
@@ -268,7 +268,7 @@ static void test_uri_transform(void) {
   uri_set_path(&r, "../../../g", -1);
   uri_transform(&b, &r, &t);
   s = uri_compose(&t);
-  g_assert(g_strcmp0("http://a/g", s) == 0);
+  g_assert_cmpstr("http://a/g", ==, s);
   free(s);
   uri_clear(&r);
   uri_clear(&t);
@@ -276,7 +276,7 @@ static void test_uri_transform(void) {
   uri_set_path(&r, "../../../../g", -1);
   uri_transform(&b, &r, &t);
   s = uri_compose(&t);
-  g_assert(g_strcmp0("http://a/g", s) == 0);
+  g_assert_cmpstr("http://a/g", ==, s);
   free(s);
   uri_clear(&r);
   uri_clear(&t);
@@ -284,7 +284,7 @@ static void test_uri_transform(void) {
   uri_set_path(&r, "/./g", -1);
   uri_transform(&b, &r, &t);
   s = uri_compose(&t);
-  g_assert(g_strcmp0("http://a/g", s) == 0);
+  g_assert_cmpstr("http://a/g", ==, s);
   free(s);
   uri_clear(&r);
   uri_clear(&t);
@@ -292,7 +292,7 @@ static void test_uri_transform(void) {
   uri_set_path(&r, "/../g", -1);
   uri_transform(&b, &r, &t);
   s = uri_compose(&t);
-  g_assert(g_strcmp0("http://a/g", s) == 0);
+  g_assert_cmpstr("http://a/g", ==, s);
   free(s);
   uri_clear(&r);
   uri_clear(&t);
@@ -300,7 +300,7 @@ static void test_uri_transform(void) {
   uri_set_path(&r, "g.", -1);
   uri_transform(&b, &r, &t);
   s = uri_compose(&t);
-  g_assert(g_strcmp0("http://a/b/c/g.", s) == 0);
+  g_assert_cmpstr("http://a/b/c/g.", ==, s);
   free(s);
   uri_clear(&r);
   uri_clear(&t);
@@ -308,7 +308,7 @@ static void test_uri_transform(void) {
   uri_set_path(&r, ".g", -1);
   uri_transform(&b, &r, &t);
   s = uri_compose(&t);
-  g_assert(g_strcmp0("http://a/b/c/.g", s) == 0);
+  g_assert_cmpstr("http://a/b/c/.g", ==, s);
   free(s);
   uri_clear(&r);
   uri_clear(&t);
@@ -316,7 +316,7 @@ static void test_uri_transform(void) {
   uri_set_path(&r, "g..", -1);
   uri_transform(&b, &r, &t);
   s = uri_compose(&t);
-  g_assert(g_strcmp0("http://a/b/c/g..", s) == 0);
+  g_assert_cmpstr("http://a/b/c/g..", ==, s);
   free(s);
   uri_clear(&r);
   uri_clear(&t);
@@ -324,7 +324,7 @@ static void test_uri_transform(void) {
   uri_set_path(&r, "..g", -1);
   uri_transform(&b, &r, &t);
   s = uri_compose(&t);
-  g_assert(g_strcmp0("http://a/b/c/..g", s) == 0);
+  g_assert_cmpstr("http://a/b/c/..g", ==, s);
   free(s);
   uri_clear(&r);
   uri_clear(&t);
@@ -333,7 +333,7 @@ static void test_uri_transform(void) {
   uri_set_path(&r, "./../g", -1);
   uri_transform(&b, &r, &t);
   s = uri_compose(&t);
-  g_assert(g_strcmp0("http://a/b/g", s) == 0);
+  g_assert_cmpstr("http://a/b/g", ==, s);
   free(s);
   uri_clear(&r);
   uri_clear(&t);
@@ -341,7 +341,7 @@ static void test_uri_transform(void) {
   uri_set_path(&r, "./g/.", -1);
   uri_transform(&b, &r, &t);
   s = uri_compose(&t);
-  g_assert(g_strcmp0("http://a/b/c/g/", s) == 0);
+  g_assert_cmpstr("http://a/b/c/g/", ==, s);
   free(s);
   uri_clear(&r);
   uri_clear(&t);
@@ -349,7 +349,7 @@ static void test_uri_transform(void) {
   uri_set_path(&r, "g/./h", -1);
   uri_transform(&b, &r, &t);
   s = uri_compose(&t);
-  g_assert(g_strcmp0("http://a/b/c/g/h", s) == 0);
+  g_assert_cmpstr("http://a/b/c/g/h", ==, s);
   free(s);
   uri_clear(&r);
   uri_clear(&t);
@@ -357,7 +357,7 @@ static void test_uri_transform(void) {
   uri_set_path(&r, "g/../h", -1);
   uri_transform(&b, &r, &t);
   s = uri_compose(&t);
-  g_assert(g_strcmp0("http://a/b/c/h", s) == 0);
+  g_assert_cmpstr("http://a/b/c/h", ==, s);
   free(s);
   uri_clear(&r);
   uri_clear(&t);
@@ -365,7 +365,7 @@ static void test_uri_transform(void) {
   uri_set_path(&r, "g;x=1/./y", -1);
   uri_transform(&b, &r, &t);
   s = uri_compose(&t);
-  g_assert(g_strcmp0("http://a/b/c/g;x=1/y", s) == 0);
+  g_assert_cmpstr("http://a/b/c/g;x=1/y", ==, s);
   free(s);
   uri_clear(&r);
   uri_clear(&t);
@@ -373,7 +373,7 @@ static void test_uri_transform(void) {
   uri_set_path(&r, "g;x=1/../y", -1);
   uri_transform(&b, &r, &t);
   s = uri_compose(&t);
-  g_assert(g_strcmp0("http://a/b/c/y", s) == 0);
+  g_assert_cmpstr("http://a/b/c/y", ===, s);
   free(s);
   uri_clear(&r);
   uri_clear(&t);
@@ -391,7 +391,7 @@ static void test_uri_compose(void) {
   g_assert(uri_parse(&u, uri1, strlen(uri1), NULL));
   uri_normalize(&u);
   char *s = uri_compose(&u);
-  g_assert(g_strcmp0("example://example.com/boo/%25hi%0B/.test/this?query=string#frag", s) == 0);
+  g_assert_cmpstr("example://example.com/boo/%25hi%0B/.test/this?query=string#frag", ==, s);
   free(s);
   uri_free(&u);
 }
@@ -403,7 +403,7 @@ static void test_uri_normalize_host(void) {
   uri_init(&u);
   g_assert(uri_parse(&u, uri1, strlen(uri1), NULL));
   uri_normalize(&u);
-  g_assert(g_strcmp0("example.com", u.host) == 0);
+  g_assert_cmpstr("example.com", ==, u.host);
 
   uri_free(&u);
 }
@@ -416,13 +416,13 @@ static void test_uri_normalize_one_slash(void) {
   uri_init(&u);
   g_assert(uri_parse(&u, uri1, strlen(uri1), NULL));
   uri_normalize(&u);
-  g_assert(g_strcmp0("/", u.path) == 0);
+  g_assert_cmpstr("/", ==, u.path);
 
   uri_clear(&u);
 
   g_assert(uri_parse(&u, uri2, strlen(uri2), NULL));
   uri_normalize(&u);
-  g_assert(g_strcmp0("/", u.path) == 0);
+  g_assert_cmpstr("/", ==, u.path);
 
   uri_free(&u);
 }
@@ -434,7 +434,7 @@ static void test_uri_normalize_all_slashes(void) {
   uri_init(&u);
   g_assert(uri_parse(&u, uri1, strlen(uri1), NULL));
   uri_normalize(&u);
-  g_assert(g_strcmp0("/", u.path) == 0);
+  g_assert_cmpstr("/", ==, u.path);
   uri_free(&u);
 }
 
@@ -445,19 +445,19 @@ static void test_uri_normalize(void) {
   uri_init(&u);
   g_assert(uri_parse(&u, uri1, strlen(uri1), NULL));
   uri_normalize(&u);
-  g_assert(g_strcmp0("/b/c/%7Bfoo%7D", u.path) == 0);
+  g_assert_cmpstr("/b/c/%7Bfoo%7D", ==, u.path);
   uri_clear(&u);
 
   static const char uri2[] = "http://host/../";
   g_assert(uri_parse(&u, uri2, strlen(uri2), NULL));
   uri_normalize(&u);
-  g_assert(g_strcmp0(u.path, "/") == 0);
+  g_assert_cmpstr(u.path, ==, "/");
   uri_clear(&u);
 
   static const char uri3[] = "http://host/./";
   g_assert(uri_parse(&u, uri3, strlen(uri3), NULL));
   uri_normalize(&u);
-  g_assert(g_strcmp0("/", u.path) == 0);
+  g_assert_cmpstr("/", ==, u.path);
 
   uri_free(&u);
 }
@@ -469,20 +469,20 @@ static void test_uri_parse_many(void) {
 
   const char uri1[] = "http://example.com/path/to/something?query=string#frag";
   g_assert(uri_parse(&u, uri1, strlen(uri1), NULL));
-  g_assert(g_strcmp0(u.scheme, "http") == 0);
-  g_assert(g_strcmp0(u.host, "example.com") == 0);
-  g_assert(g_strcmp0(u.path, "/path/to/something") == 0);
-  g_assert(g_strcmp0(u.query, "?query=string") == 0);
-  g_assert(g_strcmp0(u.fragment, "#frag") == 0);
+  g_assert_cmpstr(u.scheme, ==, "http");
+  g_assert_cmpstr(u.host, ==, "example.com");
+  g_assert_cmpstr(u.path, ==, "/path/to/something");
+  g_assert_cmpstr(u.query, ==, "?query=string");
+  g_assert_cmpstr(u.fragment, ==, "#frag");
   uri_clear(&u);
 
   const char uri2[] = "http://jason:password@example.com:5555/path/to/";
   g_assert(uri_parse(&u, uri2, strlen(uri2), NULL));
-  g_assert(g_strcmp0(u.scheme, "http") == 0);
-  g_assert(g_strcmp0(u.userinfo, "jason:password") == 0);
-  g_assert(g_strcmp0(u.host, "example.com") == 0);
+  g_assert_cmpstr(u.scheme, ==, "http");
+  g_assert_cmpstr(u.userinfo, ==, "jason:password");
+  g_assert_cmpstr(u.host, ==, "example.com");
   g_assert(u.port == 5555);
-  g_assert(g_strcmp0(u.path, "/path/to/") == 0);
+  g_assert_cmpstr(u.path, ==, "/path/to/");
   uri_clear(&u);
 
   /* this should fail */
@@ -490,16 +490,16 @@ static void test_uri_parse_many(void) {
   const char *error_at = NULL;
   g_assert(uri_parse(&u, uri3, strlen(uri3), &error_at) == 0);
   g_assert(error_at != NULL);
-  g_assert(g_strcmp0("[303fds", error_at) == 0);
+  g_assert_cmpstr("[303fds", ==, error_at);
   uri_clear(&u);
 
   const char uri4[] = "https://example.com:23999";
   g_assert(uri_parse(&u, uri4, strlen(uri4), &error_at));
-  g_assert(g_strcmp0(u.scheme, "https") == 0);
-  g_assert(g_strcmp0(u.host, "example.com") == 0);
+  g_assert_cmpstr(u.scheme, ==, "https");
+  g_assert_cmpstr(u.host, ==, "example.com");
   g_assert(u.port == 23999);
   /* TODO: maybe make empty path == NULL? */
-  g_assert(g_strcmp0(u.path, "") == 0);
+  g_assert_cmpstr(u.path, ==, "");
   g_assert(u.query == NULL);
   g_assert(u.fragment == NULL);
   g_assert(error_at == NULL);
@@ -507,11 +507,11 @@ static void test_uri_parse_many(void) {
 
   const char uri5[] = "svn+ssh://jason:password@example.com:22/thing/and/stuff";
   g_assert(uri_parse(&u, uri5, strlen(uri5), &error_at));
-  g_assert(g_strcmp0(u.scheme, "svn+ssh") == 0);
-  g_assert(g_strcmp0(u.userinfo, "jason:password") == 0);
-  g_assert(g_strcmp0(u.host, "example.com") == 0);
+  g_assert_cmpstr(u.scheme, ==, "svn+ssh");
+  g_assert_cmpstr(u.userinfo, ==, "jason:password");
+  g_assert_cmpstr(u.host, ==, "example.com");
   g_assert(u.port == 22);
-  g_assert(g_strcmp0(u.path, "/thing/and/stuff") == 0);
+  g_assert_cmpstr(u.path, ==, "/thing/and/stuff");
   g_assert(error_at == NULL);
   uri_clear(&u);
 
