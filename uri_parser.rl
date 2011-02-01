@@ -54,7 +54,7 @@ URI_DEFINE_SETTER(fragment)
   }
 
   action port {
-    u->port = strtol(mark, NULL, 0);
+    if (mark) u->port = strtol(mark, NULL, 0);
   }
 
   action path {
@@ -293,11 +293,11 @@ static void remove_dot_segments(uri *u) {
     free(segs);
   }
 
-  if (segm == 0) {
+  if (segm == 0 && p) {
     *p = '/'; p++;
   }
 
-  *p = 0;
+  if (p) *p = 0;
 }
 
 void uri_normalize(uri *u) {
