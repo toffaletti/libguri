@@ -6,22 +6,12 @@
 
 #include <stdio.h>
 
-#ifdef URI_USE_GLIB
 #define URI_DEFINE_SETTER(field) \
-  void uri_set_##field(uri *u, const char *s, ssize_t l) { \
+  void uri_set_##field(uri_t *u, const char *s, ssize_t l) { \
     if (s == 0) { u->field = 0; return; } \
     if (l == -1) { l = strlen(s); } \
     u->field = g_string_chunk_insert_len(u->chunk, s, l); \
   }
-#else
-#define URI_DEFINE_SETTER(field) \
-  void uri_set_##field(uri *u, const char *s, ssize_t l) { \
-    if (u->field) { free(u->field); }
-    if (s == 0) { u->field = 0; return; } \
-    if (l == -1) { l = strlen(s); } \
-    u->field = strndup(s, l); \
-  }
-#endif
 
 URI_DEFINE_SETTER(scheme)
 URI_DEFINE_SETTER(userinfo)
@@ -76,7 +66,7 @@ URI_DEFINE_SETTER(fragment)
 
 %% write data;
 
-static void uri_zero(uri *u) {
+static void uri_zero(uri_t *u) {
 /* zero everything *except* chunk */
   u->scheme = NULL;
   u->userinfo = NULL;
@@ -87,14 +77,13 @@ static void uri_zero(uri *u) {
   u->port = 0;
 }
 
-void uri_init(uri *u) {
-  uri_zero(u);
-#ifdef URI_USE_GLIB
+uri_t *uri_new() {
+  uri_t *u = g_slice_new0(uri_t);
   u->chunk = g_string_chunk_new(1024);
-#endif
+  return u;
 }
 
-int uri_parse(uri *u, const char *buf, size_t len, const char **error_at) {
+int uri_parse(uri_t *u, const char *buf, size_t len, const char **error_at) {
   const char *mark = NULL;
   const char *p, *pe, *eof;
   int cs = 0;
@@ -118,27 +107,14 @@ int uri_parse(uri *u, const char *buf, size_t len, const char **error_at) {
   return (cs != uri_parser_error && cs >= uri_parser_first_final);
 }
 
-void uri_clear(uri *u) {
-#ifdef URI_USE_GLIB
+void uri_clear(uri_t *u) {
   if (u->chunk) g_string_chunk_clear(u->chunk);
-#else
-  uri_free(u);
-#endif
   uri_zero(u);
 }
 
-void uri_free(uri *u) {
-#ifdef URI_USE_GLIB
+void uri_free(uri_t *u) {
   if (u->chunk) g_string_chunk_free(u->chunk);
-#else
-  if (u->scheme) free(u->scheme);
-  if (u->userinfo) free(u->userinfo);
-  if (u->host) free(u->host);
-  if (u->path) free(u->path);
-  if (u->query) free(u->query);
-  if (u->fragment) free(u->fragment);
-#endif
-  uri_zero(u);
+  g_slice_free(uri_t, u);
 }
 
 %%{
@@ -221,7 +197,7 @@ static void normalize_pct_encoded(const char *buf) {
 }
 
 
-static void remove_dot_segments(uri *u) {
+static void remove_dot_segments(uri_t *u) {
   if (u->path == 0) return;
   size_t plen = strlen(u->path);
   switch (plen) {
@@ -300,7 +276,7 @@ static void remove_dot_segments(uri *u) {
   if (p) *p = 0;
 }
 
-void uri_normalize(uri *u) {
+void uri_normalize(uri_t *u) {
   for (char *p = u->scheme; *p != 0; p++) {
     *p = tolower(*p);
   }
@@ -322,7 +298,7 @@ void uri_normalize(uri *u) {
   }
 }
 
-static char *_uri_compose(uri *u, int path_only) {
+static char *_uri_compose(uri_t *u, int path_only) {
   GString *s = g_string_sized_new(1024);
   if (!path_only) {
     if (u->scheme) {
@@ -361,15 +337,15 @@ static char *_uri_compose(uri *u, int path_only) {
 }
 
 
-char *uri_compose(uri *u) {
+char *uri_compose(uri_t *u) {
     return _uri_compose(u, 0);
 }
 
-char *uri_compose_partial(uri *u) {
+char *uri_compose_partial(uri_t *u) {
     return _uri_compose(u, 1);
 }
 
-static void merge_path(uri *base, uri *r, uri *t) {
+static void merge_path(uri_t *base, uri_t *r, uri_t *t) {
   if (g_strcmp0(base->path, "") == 0 ||
     g_strcmp0(base->path, "/") == 0 ||
     base->path == NULL)
@@ -396,7 +372,7 @@ static void merge_path(uri *base, uri *r, uri *t) {
   }
 }
 
-void uri_transform(uri *base, uri *r, uri *t) {
+void uri_transform(uri_t *base, uri_t *r, uri_t *t) {
   uri_clear(t);
   if (r->scheme) {
     uri_set_scheme(t, r->scheme, -1);
