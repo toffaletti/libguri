@@ -41,6 +41,6 @@ if(RAGEL)
     add_executable(uri-parse-speed uri-parse-speed.c)
     target_link_libraries(uri-parse-speed uri)
 else(RAGEL)
-    message("ragel not found. not building libhttp11")
+    message("ragel not found. not building.")
 endif(RAGEL)
 
