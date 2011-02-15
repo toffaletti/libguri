@@ -2,7 +2,7 @@
 #include <stddef.h>
 
 /* TODO:
- * Normalization and Comparision
+ * Normalization and Comparison
  * http://tools.ietf.org/html/rfc3986#section-6
  */
 

@@ -528,3 +528,4 @@ int main(int argc, char *argv[]) {
   g_test_add_func("/uri_parse/transform", test_uri_transform);
   return g_test_run();
 }
+
