@@ -32,14 +32,14 @@ if(RAGEL)
         ragel_gen(uri_parser)
     endif (CMAKE_BUILD_TYPE STREQUAL "Release")
 
-    add_library(uri STATIC ${CMAKE_CURRENT_BINARY_DIR}/uri_parser.c)
-    target_link_libraries(uri glib-2.0)
+    add_library(guri STATIC ${CMAKE_CURRENT_BINARY_DIR}/uri_parser.c)
+    target_link_libraries(guri glib-2.0)
 
     add_executable(test-uri-parse test-uri-parse.c)
-    target_link_libraries(test-uri-parse uri)
+    target_link_libraries(test-uri-parse guri)
 
     add_executable(uri-parse-speed uri-parse-speed.c)
-    target_link_libraries(uri-parse-speed uri)
+    target_link_libraries(uri-parse-speed guri)
 else(RAGEL)
     message("ragel not found. not building.")
 endif(RAGEL)
