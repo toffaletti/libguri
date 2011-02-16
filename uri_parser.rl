@@ -8,6 +8,8 @@
 
 #define URI_DEFINE_SETTER(field) \
   void uri_set_##field(uri_t *u, const char *s, ssize_t l) { \
+    g_assert(u != NULL); \
+    g_assert(u->chunk != NULL); \
     if (s == 0) { u->field = 0; return; } \
     if (l == -1) { l = strlen(s); } \
     u->field = g_string_chunk_insert_len(u->chunk, s, l); \
@@ -77,13 +79,16 @@ static void uri_zero(uri_t *u) {
   u->port = 0;
 }
 
-uri_t *uri_new() {
+uri_t *uri_new(void) {
   uri_t *u = g_slice_new0(uri_t);
+  g_assert(u != NULL);
   u->chunk = g_string_chunk_new(1024);
+  g_assert(u->chunk != NULL);
   return u;
 }
 
 int uri_parse(uri_t *u, const char *buf, size_t len, const char **error_at) {
+  g_assert(u != NULL);
   const char *mark = NULL;
   const char *p, *pe, *eof;
   int cs = 0;
@@ -108,12 +113,17 @@ int uri_parse(uri_t *u, const char *buf, size_t len, const char **error_at) {
 }
 
 void uri_clear(uri_t *u) {
+  g_assert(u != NULL);
+  if (u == NULL) return;
   if (u->chunk) g_string_chunk_clear(u->chunk);
   uri_zero(u);
 }
 
 void uri_free(uri_t *u) {
+  g_assert(u != NULL);
+  if (u == NULL) return;
   if (u->chunk) g_string_chunk_free(u->chunk);
+  u->chunk = NULL;
   g_slice_free(uri_t, u);
 }
 
@@ -277,6 +287,7 @@ static void remove_dot_segments(uri_t *u) {
 }
 
 void uri_normalize(uri_t *u) {
+  g_assert(u != NULL);
   for (char *p = u->scheme; *p != 0; p++) {
     *p = tolower(*p);
   }
@@ -338,11 +349,13 @@ static char *_uri_compose(uri_t *u, int path_only) {
 
 
 char *uri_compose(uri_t *u) {
-    return _uri_compose(u, 0);
+  g_assert(u != NULL);
+  return _uri_compose(u, 0);
 }
 
 char *uri_compose_partial(uri_t *u) {
-    return _uri_compose(u, 1);
+  g_assert(u != NULL);
+  return _uri_compose(u, 1);
 }
 
 static void merge_path(uri_t *base, uri_t *r, uri_t *t) {
@@ -373,6 +386,9 @@ static void merge_path(uri_t *base, uri_t *r, uri_t *t) {
 }
 
 void uri_transform(uri_t *base, uri_t *r, uri_t *t) {
+  g_assert(base != NULL);
+  g_assert(r != NULL);
+  g_assert(t != NULL);
   uri_clear(t);
   if (r->scheme) {
     uri_set_scheme(t, r->scheme, -1);
