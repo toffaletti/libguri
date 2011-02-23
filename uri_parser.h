@@ -21,7 +21,7 @@ struct uri_s {
 
 typedef struct uri_s uri_t;
 
-extern uri_t *uri_new();
+extern uri_t *uri_new(void);
 extern int uri_parse(uri_t *u, const char *buf, size_t len, const char **error_at);
 extern void uri_clear(uri_t *u);
 extern void uri_free(uri_t *u);
