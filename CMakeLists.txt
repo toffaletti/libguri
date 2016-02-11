@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 2.6)
 project(uri)
+
+INCLUDE(FindPkgConfig)
+
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE "Debug")
 endif(NOT CMAKE_BUILD_TYPE)
@@ -21,7 +24,9 @@ endif (CMAKE_BUILD_TYPE STREQUAL "Release")
 
 add_definitions(-DURI_USE_GLIB -D_GNU_SOURCE)
 
-include_directories(/usr/include/glib-2.0/ /usr/lib/glib-2.0/include/)
+pkg_check_modules(GLIB REQUIRED glib-2.0)
+
+include_directories(${GLIB_INCLUDE_DIRS})
 
 if(RAGEL)
     message("ragel found at: ${RAGEL}")
