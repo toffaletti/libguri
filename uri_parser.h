@@ -1,3 +1,6 @@
+#ifndef LIBGURI_URI_PARSER_H_
+#define LIBGURI_URI_PARSER_H_
+
 #include <stdlib.h>
 #include <stddef.h>
 
@@ -37,3 +40,5 @@ extern void uri_normalize(uri_t *u);
 extern char *uri_compose(uri_t *u);
 extern char *uri_compose_partial(uri_t *u);
 extern void uri_transform(uri_t *base, uri_t *relative, uri_t *transformed);
+
+#endif  // LIBGURI_URI_PARSER_H_
