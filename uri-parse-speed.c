@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 
-int main(int argc, char *argv[]) {
+int main(int, char **) {
   char buf[1024*16];
   char *l = NULL;
   const char *error_at = NULL;
