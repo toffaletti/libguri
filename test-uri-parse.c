@@ -38,8 +38,8 @@ static void test_uri_parse_pipe(void) {
   uri_free(u);
   g_assert(st);
 }
-/*ipv6 hostname*/
-  static void test_uri_parce_ipv6(void) {
+
+static void test_uri_parce_ipv6(void) {
   static const char uri1[] ="http://[2a00:1450:4007:817::2003]/ololo.html";
   const gchar *error_at = NULL;
   uri_t *u = uri_new();
