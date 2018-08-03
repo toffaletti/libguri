@@ -57,7 +57,7 @@
   IP_literal = "[" ( IPv6address | IPvFuture  ) "]";
 
   port = digit* >mark %port;
-  host = IP_literal | IPv4address | reg_name >mark %host;
+  host = (IP_literal | IPv4address | reg_name) >mark %host;
   userinfo = (unreserved | pct_encoded | sub_delims | ":")* >mark %userinfo;
   authority = (userinfo "@")? host (":" port)?;
 

@@ -39,6 +39,18 @@ static void test_uri_parse_pipe(void) {
   g_assert(st);
 }
 
+static void test_uri_parce_ipv6(void) {
+  static const char uri1[] ="http://[2a00:1450:4007:817::2003]/ololo.html";
+  const gchar *error_at = NULL;
+  uri_t *u = uri_new();
+
+  int st = uri_parse(u, uri1, strlen(uri1), &error_at);
+  if (error_at) g_test_message("uri_parse failed at -> %s", error_at);
+  g_assert_cmpstr("[2a00:1450:4007:817::2003]", ==, u->host);
+  uri_free(u);
+  g_assert(st);
+}
+
 static void test_uri_parse_unicode_escape(void) {
   static const char uri1[] = "http://b.scorecardresearch.com/b?C1=8&C2=6035047&C3=463.9924&C4=ad21868c&C5=173229&C6=16jfaue1ukmeoq&C7=http%3A//remotecontrol.mtv.com/2011/01/20/sammi-sweetheart-giancoloa-terrell-owens-hair/&C8=Hot%20Shots%3A%20Sammi%20%u2018Sweetheart%u2019%20Lets%20Terrell%20Owens%20Play%20With%20Her%20Hair%20%BB%20MTV%20Remote%20Control%20Blog&C9=&C10=1680x1050rn=58013009";
   const gchar *error_at = NULL;
@@ -517,6 +529,7 @@ int main(int argc, char *argv[]) {
   g_test_add_func("/uri_parse/long", test_uri_parse_long);
   g_test_add_func("/uri_parse/brackets", test_uri_parse_brackets);
   g_test_add_func("/uri_parse/pipe", test_uri_parse_pipe);
+  g_test_add_func("/uri_parse/ipv6",  test_uri_parce_ipv6);
   g_test_add_func("/uri_parse/unicode_escape", test_uri_parse_unicode_escape);
   g_test_add_func("/uri_parse/double_percent", test_uri_parse_double_percent);
   g_test_add_func("/uri_parse/badencode", test_uri_parse_badencode);
