@@ -2,7 +2,12 @@
 #include <stdio.h>
 #include <string.h>
 
-int main(int argc, char *argv[]) {
+#define UNUSED(x) (void)(x)
+
+int main(int argc, char **argv) {
+  UNUSED(argc);
+  UNUSED(argv);
+
   char buf[1024*16];
   char *l = NULL;
   const char *error_at = NULL;
